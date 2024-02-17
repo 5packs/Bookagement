@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Results
+{% endblock %}
+
+{% block body %}
+
+<h1>We found these books that fit your search criteria</h1>
+
+{% for book in books %}
+
+    <form action="/view" method="post">
+        <input type="hidden" name="bookisbn" id="bookisbn" value="{{ book[0] }}">
+        <button class="btn">
+            {{ book[1] }}
+        </button>
+    </form>
+
+{% endfor %}
+
+{% endblock %}

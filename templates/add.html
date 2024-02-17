@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Add Book
+{% endblock %}
+
+{% block body %}
+
+<h1>Please enter the ISBN number of your book</h1>
+<form action="/add" method="post">
+    <input type="text" id="isbn" name="isbn" class="form-control" placeholder="ISBN Number" autofocus autocomplete="off">
+    <button class="btn">
+        Add Automatically
+    </button>
+</form>
+<form action="/addconfirmation" method="get">
+    <button class="btn">
+        Add Book Manually
+    </button>
+</form>
+
+{% endblock %}

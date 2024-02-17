@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    TODO: BOOK TITLE HERE
+{% endblock %}
+
+{% block body %}
+    <!--width="500" height="600"-->
+    <img src="{{ book_info['cover_art']}}" alt="Cover Art Missing">     
+    <h1>{{ book_info["title"] }}</h1>
+    <h2>{{ book_info["author"] }}</h2>
+    <p>
+        Synopsis: {{ book_info['synopsis'] }}
+        <br>
+        Pages: {{ book_info['pages'] }}
+        <br>
+        Publisher: {{ book_info["publisher"] }}
+        <br>
+        Date Published: {{ book_info['date_published'] }}
+        <br>
+        Language: {{ book_info['language'] }}
+        <br>
+        {{ book_info['isbn'] }}
+    </p>
+    <form action="/edit" method="post">
+        <input type="hidden" name="isbn" id="isbn" value="{{ book_info['isbn'] }}">
+        <button class="btn">
+            Edit Book
+        </button>
+    </form>
+    <form action="/remove" method="post">
+        <input type="hidden" name="isbn" id="isbn" value="{{ book_info['isbn'] }}">
+        <button class="btn">
+            Remove Book
+        </button>
+    </form>
+
+
+{% endblock %}

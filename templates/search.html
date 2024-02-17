@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Search
+{% endblock %}
+
+{% block body %}
+
+<h1>Please enter information about the book you are searching for</h1>
+<form action="/search" method="post">
+    <input autofocus type="search" id="inputsearch" name="inputsearch" class="form-control" placeholder="Enter: Title, Author, Publisher">
+    <button class="btn">
+        Search
+    </button>
+</form>
+
+{% endblock %}
