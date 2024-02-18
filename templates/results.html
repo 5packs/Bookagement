@@ -6,7 +6,11 @@
 
 {% block body %}
 
-<h1>We found these books that fit your search criteria</h1>
+{% if books|length == 0 %}
+    <h1>Sorry we didn't find any books that fit your search criteria</h1>
+{% else %}
+    <h1>We found these books that fit your search criteria</h1>
+{% endif %}
 
 {% for book in books %}
 

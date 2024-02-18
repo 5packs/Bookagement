@@ -16,6 +16,10 @@
         <input required type="text" id="synopsis" name="synopsis" class="form-control" placeholder="Synopsis" autocomplete="off" value="{{ book_info['synopsis'] }}">
         <input required type="text" id="cover_art" name="cover_art" class="form-control" placeholder="Cover Art Url" autocomplete="off" value="{{ book_info['cover_art'] }}">
         <input required type="text" id="isbn" name="isbn" class="form-control" placeholder="ISBN Number" autocomplete="off" value="{{ book_info['isbn'] }}">
+        <input type="checkbox" id="rating" name="rating" class="form-control" autocomplete="off" value="yes">
+        <label for="Rating"> Liked the book</label><br>
+        <input type="checkbox" id="finishedreading" name="finishedreading" class="form-control" autocomplete="off" value="yes">
+        <label for="finishedreading"> Finished Reading</label><br>
         <button class="btn">
             Save Changes
         </button>

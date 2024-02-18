@@ -3,11 +3,9 @@ from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 import requests as req
-import json
-
+import hashlib
 from helpers import apology, login_required
 
-     
 h = {'Authorization': '51841_15f8a1a6b75e8c37b224c61dca5164e7'}
 
 # Start application
@@ -112,7 +110,7 @@ def logout():
 @app.route('/search', methods=['POST', 'GET'])
 @login_required
 def search():
-    #FIXME: actually make a search routine that searches like not exact matches maybe use regex
+    #FIXME: actually make a search routine that searches using authors and publishers and aggregate sql
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
         # Get user input
@@ -130,7 +128,6 @@ def search():
 def view():
     # Checks which book was clicked on the search page
     current_book = request.form.get("bookisbn")
-    # TODO: remove for debugging print(current_book)
     # Sets up connection to the database
     db = get_db().cursor()
     # Query the database for the book
@@ -150,16 +147,6 @@ def view():
         "cover_art" : rows[0][8]
     }
     return render_template("view.html", book_info=book_info)
-
-@app.route('/add', methods=['POST', 'GET'])
-@login_required
-def add():
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-        # Adds the isbn number to the current flask session to pass it through
-        session["currentisbn"] = request.form.get("isbn")
-        return redirect("/addconfirmation")
-    return render_template("add.html")
 
 @app.route('/edit', methods=['POST'])
 @login_required
@@ -192,8 +179,9 @@ def save():
     with con:
         db.execute("DELETE FROM testbooks WHERE isbn = ?", (request.form.get("isbn"),))
         db.execute("INSERT INTO testbooks (title, author, publisher, isbn, pages, date_published, language, synopsis, cover_art) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", (request.form.get("title"), request.form.get("author"), request.form.get("publisher"), request.form.get("isbn"), request.form.get("pages"), request.form.get("date_published"), request.form.get("language"), request.form.get("synopsis"), request.form.get("cover_art")))
+    # Empty the flash message session variable
+    session.pop('_flashes', None)
     # Inform user about successfully updating the book using a flash popup on home page
-    # FIXME: make sure this doesnt permanently remain on the home page
     flash("Succesfully edited the book details")
     return redirect("/")
 
@@ -206,10 +194,21 @@ def remove():
     # Removes the book with matching isbn number from the database
     with con:
         db.execute("DELETE FROM testbooks WHERE isbn = ?", (request.form.get("isbn"),))
+    # Empty the flash message session variable
+    session.pop('_flashes', None)
     # Inform user about successfully removing the book using a flash popup on home page
-    # FIXME: make sure this doesnt permanently remain on the home page
     flash("Succesfully removed the book from your library")
     return redirect("/")
+
+@app.route('/add', methods=['POST', 'GET'])
+@login_required
+def add():
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        # Adds the isbn number to the current flask session to pass it through
+        session["currentisbn"] = request.form.get("isbn")
+        return redirect("/addconfirmation")
+    return render_template("add.html")
 
 @app.route('/addconfirmation', methods=['POST', 'GET'])
 @login_required
@@ -226,12 +225,44 @@ def addconfirmation():
         rows = fetched.fetchall()
         if len(rows) != 0:
             return apology("This book is already in your database! If you want to change it please edit it instead")
-        # Add book to database
+        # Fetch book data into dictionary from form for easier formatting
+        book_info = {
+        "title" : request.form.get("title"),
+        "author" : request.form.get("author"),
+        "publisher": request.form.get("publisher"),
+        "isbn" : request.form.get("isbn"),
+        "pages" : request.form.get("pages"),
+        "date_published" : request.form.get("date_published"),
+        "language" : request.form.get("language"),
+        "synopsis": request.form.get("synopsis"),
+        "cover_art" : request.form.get("cover_art"),
+        "liked" : request.form.get("rating"),
+        "finished_reading" : request.form.get("finished_reading"),
+        "user_id" : session.get("user_id")
+        }
+        # Hash the author name string using SHA1 to generate the author_id which is the primary key in the authors table
+        hashed_author_name = hashlib.sha1(book_info["author"].encode())
+        # Check if author already in database if not insert into authors table
+        fetched = db.execute("SELECT * FROM authors WHERE author_id = ?", (hashed_author_name.hexdigest(),))
+        authors_rows = fetched.fetchall()
+        if len(authors_rows) == 0:
+            with con:
+                db.execute("INSERT INTO authors (author_id, name) VALUES(?, ?)", (hashed_author_name.hexdigest(), book_info["author"]))
+        # Hash the publisher name string using SHA1 to generate the publisher_id which is the primary key in the publishers table
+        hashed_publisher_name = hashlib.sha1(book_info["publisher"].encode())
+        # Check if publisher already in database if not insert into publishers table
+        fetched = db.execute("SELECT * FROM publishers WHERE author_id = ?", (hashed_publisher_name.hexdigest(),))
+        publisher_rows = fetched.fetchall()
+        if len(publisher_rows) == 0:
+            with con:
+                db.execute("INSERT INTO publishers (publisher_id, name) VALUES(?, ?)", (hashed_publisher_name.hexdigest(), book_info["publisher"]))
+        # Insert book to database with appropriate foreign keys
+        # TODO: organize insert statement properly add user_id field from session variable and make tables in tutorial.db or try final.db
+        # TODO: Then work on other endpoints to add the additional select statements and information
         with con:
-            db.execute("INSERT INTO testbooks (title, author, publisher, isbn, pages, date_published, language, synopsis, cover_art) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", (request.form.get("title"), request.form.get("author"), request.form.get("publisher"), request.form.get("isbn"), request.form.get("pages"), request.form.get("date_published"), request.form.get("language"), request.form.get("synopsis"), request.form.get("cover_art")))
+            db.execute("INSERT INTO testbooks (title, author, publisher, isbn, pages, date_published, language, synopsis, cover_art) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)")
         # Inform user about successfully adding the book using a flash popup on home page
-        # FIXME: make sure this doesnt permanently remain on the home page
-        flash("Succesfully added the book to your library")
+        flash("Successfully added the book to your library")
         # Redirect user to homepage
         return redirect("/")
     book_info = {
@@ -257,13 +288,19 @@ def addconfirmation():
             flash(f"We have automatically filled some of the book details for you.")
             # Update the dictionary with the fetched book information
             book_info["title"] = book_results["book"]["title"].replace('-', ' ').title()
-            book_info["author"] = book_results["book"]["authors"][0].replace('-', ' ').title()
+            if len(book_results["book"]["authors"]) > 0:
+                book_info["author"] = book_results["book"]["authors"][0].replace('-', ' ').title()
+            else:
+                book_info["author"] = "Unknown Author"
             book_info["publisher"] = book_results["book"]["publisher"].replace('-', ' ').title()
             book_info["isbn"] = book_results["book"]["isbn"]
             book_info["pages"] = book_results["book"]["pages"]
             book_info["date_published"] = book_results["book"]["date_published"]
             book_info["language"] = book_results["book"]["language"].title()
-            book_info["synopsis"] = book_results["book"]["synopsis"]
+            if "synopsis" in book_results:
+                book_info["synopsis"] = book_results["book"]["synopsis"]
+            else:
+                book_info["synopsis"] = ""
             book_info["cover_art"] = book_results["book"]["image"]
         else:
             flash(f"Sorry we could not automatically find the book under this ISBN number.")
