@@ -20,7 +20,13 @@
         <br>
         Language: {{ book_info['language'] }}
         <br>
-        {{ book_info['isbn'] }}
+        Location: {{ book_info["location"] }}
+        <br>
+        Finished Reading: {{ book_info["finished_reading"] }}
+        <br>
+        Liked the book: {{ book_info["liked"] }}
+        <br>
+        ISBN: {{ book_info['isbn'] }}
     </p>
     <form action="/edit" method="post">
         <input type="hidden" name="isbn" id="isbn" value="{{ book_info['isbn'] }}">
