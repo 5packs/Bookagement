@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Results
+{% endblock %}
+
+{% block body %}
+
+<h1 class="headingone">Please enter who you are borrowing the book to:</h1>
+<form action="/borrow" method="post">
+    <input type="hidden" name="book_id" value="{{ book_id }}">
+    <input autofocus type="search" id="borrower" name="borrower" class="form-control" placeholder="Name of borrower">
+    <button style="margin-top: 10px;" class="btn btn-lg btn-outline-info">
+        Borrow
+    </button>
+</form>
+
+{% endblock %}

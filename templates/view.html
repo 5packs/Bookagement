@@ -5,41 +5,78 @@
 {% endblock %}
 
 {% block body %}
-    <!--width="500" height="600"-->
-    <img src="{{ book_info['cover_art']}}" alt="Cover Art Missing">     
-    <h1>{{ book_info["title"] }}</h1>
-    <h2>{{ book_info["author"] }}</h2>
-    <p>
-        Synopsis: {{ book_info['synopsis'] }}
-        <br>
-        Pages: {{ book_info['pages'] }}
-        <br>
-        Publisher: {{ book_info["publisher"] }}
-        <br>
-        Date Published: {{ book_info['date_published'] }}
-        <br>
-        Language: {{ book_info['language'] }}
-        <br>
-        Location: {{ book_info["location"] }}
-        <br>
-        Finished Reading: {{ book_info["finished_reading"] }}
-        <br>
-        Liked the book: {{ book_info["liked"] }}
-        <br>
-        ISBN: {{ book_info['isbn'] }}
-    </p>
-    <form action="/edit" method="post">
-        <input type="hidden" name="isbn" id="isbn" value="{{ book_info['isbn'] }}">
-        <button class="btn">
-            Edit Book
-        </button>
-    </form>
-    <form action="/remove" method="post">
-        <input type="hidden" name="isbn" id="isbn" value="{{ book_info['isbn'] }}">
-        <button class="btn">
-            Remove Book
-        </button>
-    </form>
+
+    <div class="row">
+        <div style="width: 40%; min-width: 300px;">
+            <img style="height: 550px; width: auto; align-self: center;" src="{{ book_info['cover_art']}}" alt="Cover Art Missing">     
+        </div>
+        <div style="width: 60%; min-width: 300px; text-align: left;">
+            <h2>{{ book_info["title"] }}</h2>
+            <h3>{{ book_info["author"] }}</h3>
+            <p>{{ book_info['synopsis'] }}</p>
+            <div style="display: flex;">
+                <div style="width: 30%;">
+                    <p>
+                    Pages: {{ book_info['pages'] }}
+                    <br>
+                    Publisher: {{ book_info["publisher"] }}
+                    <br>
+                    Date Published: {{ book_info['date_published'] }}
+                    <br>
+                    Language: {{ book_info['language'] }}
+                    <br>
+                    Location: {{ book_info["location"] }}
+                    <br>
+                    Finished Reading: {{ book_info["finished_reading"] }}
+                    <br>
+                    Liked the book: {{ book_info["liked"] }}
+                    <br>
+                    ISBN: {{ book_info['isbn'] }}
+                    <br>
+                    Borrowed: {{ book_info['borrowed_name'] }}
+                    </p>
+                </div>
+                <div style="width: 70%; display: flex; align-items: center; justify-content:space-evenly;">
+                    <div>
+                        <form action="/edit" method="post">
+                            <input type="hidden" name="book_id" value="{{ book_info['book_id'] }}">
+                            <button class="btn btn-outline-warning btn-lg">
+                                Edit Book
+                            </button>
+                        </form>
+                    </div>
+                    <div>
+                        <form action="/remove" method="post">
+                            <input type="hidden" name="book_id" value="{{ book_info['book_id'] }}">
+                            <button class="btn btn-outline-danger btn-lg">
+                                Remove Book
+                            </button>
+                        </form>
+                    </div>
+                    {% if book_info["borrowed_id"] == '0' %}
+                    <div>
+                        <form action="/borrowingto" method="post">
+                            <input type="hidden" name="book_id" value="{{ book_info['book_id'] }}">
+                            <button class="btn btn-outline-info btn-lg">
+                                Borrow Book
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div>
+                        <form action="/returningto" method="post">
+                            <input type="hidden" name="book_id" value="{{ book_info['book_id'] }}">
+                            <input type="hidden" name="borrowed_id" value="{{ book_info['borrowed_id'] }}">
+                            <button class="btn btn-outline-success btn-lg">
+                                Return Book
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 {% endblock %}

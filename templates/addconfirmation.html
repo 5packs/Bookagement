@@ -25,15 +25,17 @@
         <br>
         <input required type="text" id="isbn" name="isbn" class="form-control" placeholder="ISBN Number*" autocomplete="off" value="{{ book_info['isbn'] }}">
         <br>
-        <input type="checkbox" id="liked" name="liked" autocomplete="off" value="yes">
-        <label for="liked"> Liked the book</label>
+        <div class="form-check form-switch">
+            <input style="float: none;" type="checkbox" id="liked" name="liked" autocomplete="off" value="yes" class="form-check-input">
+            <label for="liked" class="form-check-label"> Liked the book</label>
+            <br>
+            <input style="float: none;" type="checkbox" id="finished_reading" name="finished_reading" autocomplete="off" value="yes" class="form-check-input">
+            <label for="finished_reading" class="form-check-label"> Finished Reading</label>
+        </div>
         <br>
-        <input type="checkbox" id="finished_reading" name="finished_reading" autocomplete="off" value="yes">
-        <label for="finished_reading"> Finished Reading</label>
-        <br><br>
         <input type="text" id="location" name="location" class="form-control" placeholder="Location" autocomplete="off" value="">
         <br>
-        <button class="btn">
+        <button class="btn btn-outline-success">
             Add Book
         </button>
     </form>

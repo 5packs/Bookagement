@@ -7,26 +7,56 @@
 {% block body %}
 
 
-<!-- TODO: add an if statement to check whether the books fetched are empty if not add here random?? books from the library of the user by random int selectng liek 4 books which they havent read ye-->
-<h1>Here are some unread books from your personal library!</h1>
-<h5>Perhaps give them a shot.</h4>
+{% if book_info1|length == 0 %}
+    <h1 class="headingone">Please add more unread books which we can recommend</h1>
+{% else %}
 
-<div class="row">
+    <h1>Here are some unread books from your personal library!</h1>
+    <h5>Perhaps give them a try?</h4>
 
-    {% for book in book_info %}
-    <div class="col-sm-4 mb-3 mb-sm-0">
-        <div class="card" style="height: 500px">
-            <img style="height: 300px; width: auto; align-self: center;" src="{{ book.cover_art }}" class="card-img-top" alt="...">
-            <div class="card-body">
-                <h5 class="card-text">{{ book.title }}</h5>
-                <p class="card-text">Release year: <b>{{ book.date_published }}</b></p>
-                <p class="card-text">{{ book.synopsis }}</p>
+    <div class="row">
+
+        {% for book in book_info1 %}
+        <div class="col-sm-4 mb-3 mb-sm-0">
+            <div class="card" style="height: 500px">
+                <img style="height: 300px; width: auto; align-self: center;" src="{{ book.cover_art }}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-text">{{ book.title }}</h5>
+                    <p class="card-text">Release year: <b>{{ book.date_published }}</b></p>
+                    <p class="card-text">{{ book.synopsis }}</p>
+                </div>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
 
-<h1>These are the books you should read!</h1>
+{% endif %}
+
+<br>
+
+{% if book_info2|length == 0 %}
+    <h1 class="headingone">Please add more books which you enjoyed reading</h1>
+{% else %}
+
+    <h1>Here are some books you read in the past and enjoyed!</h1>
+    <h5>Perhaps give them a reread?</h4>
+
+    <div class="row">
+
+        {% for book in book_info2 %}
+        <div class="col-sm-4 mb-3 mb-sm-0">
+            <div class="card" style="height: 500px">
+                <img style="height: 300px; width: auto; align-self: center;" src="{{ book.cover_art }}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-text">{{ book.title }}</h5>
+                    <p class="card-text">Release year: <b>{{ book.date_published }}</b></p>
+                    <p class="card-text">{{ book.synopsis }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+{% endif %}
 
 {% endblock %}

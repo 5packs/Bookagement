@@ -6,10 +6,11 @@
 
 {% block body %}
 
-<h1>Please enter information about the book you are searching for</h1>
+<h1 class="headingone">Please enter information about the book you are searching for</h1>
 <form action="/search" method="post">
+    <input type="hidden" name="sort_by" value="1"> 
     <input autofocus type="search" id="inputsearch" name="inputsearch" class="form-control" placeholder="Enter: Title, Author, Publisher">
-    <button class="btn">
+    <button style="margin-top: 10px;" class="btn btn-lg btn-outline-success">
         Search
     </button>
 </form>

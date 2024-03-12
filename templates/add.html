@@ -8,13 +8,13 @@
 
 <h1>Please enter the ISBN number of your book</h1>
 <form action="/add" method="post">
-    <input type="text" id="isbn" name="isbn" class="form-control" placeholder="ISBN Number" autofocus autocomplete="off">
-    <button class="btn">
+    <input type="text" id="isbn" name="isbn" class="form-control" placeholder="ISBN Number" autofocus autocomplete="off" value="{{ isbn }}">
+    <button style="margin-top: 10px;" class="btn btn-outline-primary">
         Add Automatically
     </button>
 </form>
 <form action="/addconfirmation" method="get">
-    <button class="btn">
+    <button style="margin-top: 10px;" class="btn btn-outline-secondary">
         Add Book Manually
     </button>
 </form>

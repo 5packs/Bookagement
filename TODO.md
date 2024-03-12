@@ -1,22 +1,35 @@
 # Questions for Mr Lane
-[] - Are there extra points for multiple complex algorithms if i already have merge sort do i need sha1
+[] - Would you get extra points for using book object instead of dictionary takes tuple of SQL as a constructor and changes into book YES
 
 # TODO For Project
-[] - Add larger text box for synopsis on both add and edit pages
-[] - Mark which fields are compulsory with a star in their description on both add and edit pages
-[] - Make the home page be a recently added books thingy
-[] - Additional borrowed category which is already displayed remember
-[] - Books you should read based on AI which are or are not in your library under the unread suggested books
-[] - Add a wishlist?
+[] - Change the title names on all of your html files
+[] - Display current bestsellers to add to wishlist on main page??? no according to lane
 [] - Look at the scoring table on drive
 [] - Add a bunch of books to your database to showcase how it works
 [] - Generate UML diagram for class relationship from the sql schema
 [] - Make it pretty using background images and colors and fonts?
 
 # Features to add in the future
-[] - add other options than just sorting by release date
+[] - better visuals and design using flex box
 
 # Features to mention in writeup
+[] - should i implement pages on book searches ADD WISHLIST TABLE THAT TIES TO THE USER TABLE
+[] - Add a wishlist? in a separate table and single page for adding simple information about the book and then adding book to library
+[] - main page add books that you have read and liked to maybe revisit at some point
+[] - Additional borrowed category which is already displayed remember
+[] - end user feedback in analysis and at the ending 
+[] - Custom apology pages rendered on wrong input
+[] - Are there extra points for multiple complex algorithms if i already have merge sort do i need sha1 NO BUT CHANGE MERGE SOIRT TO SORT BY COLUMN
+[] - Make the home page be a recently added books thingy work with random unread books just random index the rows and pick 3 unread books
+[] - Should i implement the different ways to sort searched books YESSS cus it makes merge sort more complex so add dropdown form
+[] - Multiple users
+[] - Paramaterised sql
+[] - Use of jinja to generate dynamic html
+[] - Used aggregate SQL and Join command to query for books by both title and author
+[] - Reformat the app to use a bookid not isbn as primary key because multiple users cant add the same book otherwise then add borrowed
+[] - Results display using cover art
+[] - Mark which fields are compulsory with a star in their description on both add and edit pages
+[] - Add larger text box for synopsis on both add and edit pages
 [] - And read or unread toggle boolean
 [] - Liked unlike boolean add
 [] - Used figma to design the web interface with my client??
@@ -68,11 +81,14 @@ finished_reading BOOLEAN NOT NULL DEFAULT 'FALSE',
 liked BOOLEAN NOT NULL DEFAULT 'FALSE',
 location_id TEXT NOT NULL DEFAULT '0',
 user_id INT NOT NULL,
-PRIMARY KEY (isbn)
+borrowed_id TEXT NOT NULL DEFAULT '0',
+book_id INT NOT NULL UNIQUE,
+PRIMARY KEY(book_id)
 FOREIGN KEY(author_id) REFERENCES authors(author_id)
 FOREIGN KEY(publisher_id) REFERENCES publishers(publisher_id)
 FOREIGN KEY(user_id) REFERENCES users(user_id)
 FOREIGN KEY(location_id) REFERENCES locations(location_id)
+FOREIGN KEY(borrowed_id) REFERENCES borrowed(borrowed_id)
 );
 
 CREATE TABLE authors (
@@ -98,5 +114,21 @@ CREATE TABLE locations (
 location_id INT NOT NULL,
 location_name TEXT NOT NULL,
 PRIMARY KEY (location_id)
+);
+
+CREATE TABLE borrowed (
+borrowed_id INT NOT NULL,
+person TEXT NOT NULL,
+PRIMARY KEY (borrowed_id)
+);
+
+CREATE TABLE wishlist (
+wish_id TEXT NOT NULL UNIQUE,
+isbn INT NOT NULL,
+title TEXT NOT NULL,
+user_id TEXT NOT NULL,
+cover_art TEXT NOT NULL,
+PRIMARY KEY (wish_id)
+FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
 ```

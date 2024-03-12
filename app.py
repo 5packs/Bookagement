@@ -4,12 +4,16 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 import requests as req
 import hashlib
-from helpers import apology, login_required, custom_merge_sort
+import random
+from helpers import apology, login_required, custom_merge_sort, pick_three
 
 h = {'Authorization': '51841_15f8a1a6b75e8c37b224c61dca5164e7'}
 
 # Start application
 app = Flask(__name__)
+
+# Set up static folder allowing for stylesheets
+app.static_folder = 'static'
 
 # Set session to use filesystem (instead of cookies)
 app.config["SESSION_PERMANENT"] = False
@@ -37,37 +41,20 @@ def close_connection(exception):
 @app.route('/')
 @login_required
 def index():
-    #TODO: add the ability to display recent books and other homepage things
     # Sets up connection to the database
     db = get_db().cursor()
     # Query the database for the most recent added or edited unread books
-    fetched = db.execute("SELECT * FROM books WHERE finished_reading = (?)", ("0",))
-    rows = fetched.fetchall()
-    # If there is less than 3 unread books in the library instead redirect user to the add book page
-    # TODO: Maybe make the whole div disappear instead from the main page and instead show a big text add more books to get started
-    if len(rows) < 3:
-        return redirect("/add")
-    # Creates a list to pass to the jinja template and formats the book data fetched from the database to display it on bootstrap cards
-    book_info = []
-    for book in rows:
-        book_temp = {
-            "date_published" : book[5],
-            "cover_art" : book[8],
-        }
-        book_temp["title"] = book[1]
-        # Shortens the title to a maximum of 35 characters and adds ... to the end
-        if len(book_temp["title"]) > 35:
-            book_temp["title"] = book_temp["title"][0:36].rstrip() + "..."
-        book_temp["synopsis"] = book[7]
-        # Shortens the synopsis to a maximum of 199 characters and adds ... to the end
-        if len(book_temp["synopsis"]) > 159:
-            book_temp["synopsis"] = book_temp["synopsis"][0:160] + "..."
-        elif len(book_temp["synopsis"]) <= 0:
-            book_temp["synopsis"] = "No book description available :("
-        book_info.append(book_temp)
-        if len(book_info) >= 3:
-            break;
-    return render_template("index.html", book_info=book_info)
+    fetched = db.execute("SELECT * FROM books WHERE finished_reading = ? AND borrowed_id = ? AND user_id = ?", ("0", "0", session.get("user_id")))
+    rows1 = fetched.fetchall()
+    # Function for picking three random books out of a book tuple list
+    book_info1 = pick_three(rows1)
+    # Query the database for the most recent added or edited unread books
+    fetched = db.execute("SELECT * FROM books WHERE finished_reading = ? AND borrowed_id = ? AND liked = ? AND user_id = ?", ("1", "0", "1", session.get("user_id")))
+    rows2 = fetched.fetchall()
+    # Function for picking three random books out of a book tuple list
+    book_info2 = pick_three(rows2)
+    # Render the homepage
+    return render_template("index.html", book_info1=book_info1, book_info2=book_info2)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -142,40 +129,45 @@ def logout():
 @app.route('/search', methods=['POST', 'GET'])
 @login_required
 def search():
-    #TODO: actually make a search routine that searches using authors and publishers and aggregate sql
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
         # Get user input
         search_query = request.form.get("inputsearch").title()
         # Connect to database in this context
         db = get_db().cursor()
-        # Query database for matching books
-        fetched = db.execute(f"SELECT * FROM books WHERE title LIKE ? AND user_id = ?", (f"{search_query}%", session.get("user_id")))
+        # Query database for matching books using title or author using aggregate SQL and SQL JOIN
+        fetched = db.execute(f"SELECT * FROM books JOIN authors ON books.author_id=authors.author_id WHERE (title LIKE ? OR name LIKE ?) AND user_id = ?", (f"{search_query}%", f"{search_query}%", session.get("user_id")))
         rows = fetched.fetchall()
-        # Sorts all the books to be displayed using a custom written merge sort based on release date [5] period in tuple of book results
-        custom_merge_sort(rows)
-        return render_template("results.html", books=rows)
+        # Sorts all the books to be displayed using a custom written merge sort
+        # Get sort input from form
+        sort_by = int(request.form.get("sort_by"))
+        # Sorts by parameter in the form of column within tuple of book in books
+        custom_merge_sort(rows, sort_by)
+        return render_template("results.html", books=rows, search_query=search_query)
     return render_template("search.html")
 
 @app.route('/view', methods=['POST'])
 @login_required
 def view():
     # Checks which book was clicked on the search page
-    current_book = request.form.get("bookisbn")
+    current_book = request.form.get("bookid")
     # Sets up connection to the database
     db = get_db().cursor()
     # Query the database for the book
-    fetched = db.execute("SELECT * FROM books WHERE isbn = ?", (current_book,))
+    fetched = db.execute("SELECT * FROM books WHERE book_id = ?", (current_book,))
     rows = fetched.fetchall()
-    if len(rows) > 1:
-        return apology("Your search query was not specific enough")
-    # Fetch author publisher and location name using the hashed id
+    # Fetch author publisher borrower and location name using the hashed id
     author_query = db.execute("SELECT * FROM authors WHERE author_id = ?", (rows[0][2],))
     author_name = author_query.fetchall()[0][1]
     publisher_query = db.execute("SELECT * FROM publishers WHERE publisher_id = ?", (rows[0][3],))
     publisher_name = publisher_query.fetchall()[0][1]
     location_query = db.execute("SELECT * FROM locations WHERE location_id = ?", (rows[0][11],))
     location_name = location_query.fetchall()[0][1]
+    borrow_id = rows[0][13]
+    borrow_name = "No"
+    if borrow_id != '0':
+        borrow_query = db.execute("SELECT * FROM borrowed WHERE borrowed_id = ?", (borrow_id,))
+        borrow_name = borrow_query.fetchall()[0][1]
     # Create a book value dictionary out of the values returned from the search query in the database
     book_info = {
         "title" : rows[0][1],
@@ -187,7 +179,10 @@ def view():
         "language" : rows[0][6],
         "synopsis": rows[0][7],
         "cover_art" : rows[0][8],
-        "location" : location_name
+        "book_id": rows[0][14],
+        "location" : location_name,
+        "borrowed_id": borrow_id,
+        "borrowed_name": borrow_name
     }
     # Check checkboxes separately for input
     liked = rows[0][10]
@@ -209,7 +204,7 @@ def edit():
     con = get_db()
     db = con.cursor()
     # Gets the book details from database using the ISBN number passed in form
-    fetched = db.execute("SELECT * FROM books WHERE isbn = ?", (request.form.get("isbn"),))
+    fetched = db.execute("SELECT * FROM books WHERE book_id = ?", (request.form.get("book_id"),))
     rows = fetched.fetchall()[0]
     # Create a book value dictionary out of the values returned from the search query in the database
     book_info = {}
@@ -223,6 +218,7 @@ def edit():
     book_info["synopsis"] = rows[7]
     book_info["cover_art"] = rows[8]
     book_info["location"] = rows[11]
+    book_info["book_id"] = rows[14]
     # Check checkboxes separately for input
     liked = rows[10]
     if liked == 0:
@@ -287,9 +283,10 @@ def save():
                 db.execute("INSERT INTO locations (location_id, location_name) VALUES(?, ?)", (hashed_location_name, location))
         location = hashed_location_name
     # Update the book entry in the database
+    book_id = request.form.get("book_id")
     with con:
-        db.execute("DELETE FROM books WHERE isbn = ?", (request.form.get("isbn"),))
-        db.execute("INSERT INTO books (title, author_id, publisher_id, isbn, pages, date_published, language, synopsis, cover_art, finished_reading, liked, location_id, user_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (request.form.get("title"), hashed_author_name.hexdigest(), hashed_publisher_name.hexdigest(), request.form.get("isbn"), request.form.get("pages"), request.form.get("date_published"), request.form.get("language"), request.form.get("synopsis"), request.form.get("cover_art"), finished_reading, liked, location, session.get("user_id")))
+        db.execute("DELETE FROM books WHERE book_id = ?", (book_id,))
+        db.execute("INSERT INTO books (title, author_id, publisher_id, isbn, pages, date_published, language, synopsis, cover_art, finished_reading, liked, location_id, user_id, book_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (request.form.get("title"), hashed_author_name.hexdigest(), hashed_publisher_name.hexdigest(), request.form.get("isbn"), request.form.get("pages"), request.form.get("date_published"), request.form.get("language"), request.form.get("synopsis"), request.form.get("cover_art"), finished_reading, liked, location, session.get("user_id"), book_id))
     # Empty the flash message session variable
     session.pop('_flashes', None)
     # Inform user about successfully updating the book using a flash popup on home page
@@ -304,7 +301,10 @@ def remove():
     db = con.cursor()
     # Removes the book with matching isbn number from the database
     with con:
-        db.execute("DELETE FROM books WHERE isbn = ?", (request.form.get("isbn"),))
+        rows = db.execute("SELECT * FROM books WHERE book_id = ?", (request.form.get("book_id"),)).fetchall()
+        db.execute("DELETE FROM books WHERE book_id = ?", (request.form.get("book_id"),))
+        if rows[0][13] != '0':
+            db.execute("DELETE FROM borrowed WHERE borrowed_id = ?", (rows[0][13],))
     # Empty the flash message session variable
     session.pop('_flashes', None)
     # Inform user about successfully removing the book using a flash popup on home page
@@ -319,7 +319,7 @@ def add():
         # Adds the isbn number to the current flask session to pass it through
         session["currentisbn"] = request.form.get("isbn")
         return redirect("/addconfirmation")
-    return render_template("add.html")
+    return render_template("add.html", isbn="")
 
 @app.route('/addconfirmation', methods=['POST', 'GET'])
 @login_required
@@ -337,6 +337,7 @@ def addconfirmation():
         if len(rows) != 0:
             return apology("This book is already in your database! If you want to change it please edit it instead")
         # Fetch book data into dictionary from form for easier formatting
+        # TODO: use an object instead of a dictionary here and figure out if you can pass a list of objects instead of tuples to the other templates html
         book_info = {
         "title" : request.form.get("title"),
         "author" : request.form.get("author"),
@@ -360,6 +361,8 @@ def addconfirmation():
             book_info["finished_reading"] = 0
         else:
             book_info["finished_reading"] = 1
+        # Hash the isbn + user_id string using SHA1 to generate the book_id which is the primary key in the books table
+        hashed_book_id = hashlib.sha1(f"{book_info["isbn"]}{session.get("user_id")}".encode()).hexdigest()
         # Check if location form field empty and if yes set to "Unspecified"
         if book_info["location"] == "" or book_info["location"] == None:
             book_info["location"] = "0"
@@ -397,7 +400,7 @@ def addconfirmation():
                 db.execute("INSERT INTO publishers (publisher_id, name) VALUES(?, ?)", (hashed_publisher_name.hexdigest(), book_info["publisher"]))
         # Insert book to database with appropriate foreign keys
         with con:
-            db.execute("INSERT INTO books (title, author_id, publisher_id, isbn, pages, date_published, language, synopsis, cover_art, finished_reading, liked, location_id, user_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (book_info["title"], hashed_author_name.hexdigest(), hashed_publisher_name.hexdigest(), book_info["isbn"], book_info["pages"], book_info["date_published"], book_info["language"], book_info["synopsis"], book_info["cover_art"], book_info["finished_reading"], book_info["liked"], book_info["location"], session.get("user_id")))
+            db.execute("INSERT INTO books (title, author_id, publisher_id, isbn, pages, date_published, language, synopsis, cover_art, finished_reading, liked, location_id, user_id, book_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (book_info["title"], hashed_author_name.hexdigest(), hashed_publisher_name.hexdigest(), book_info["isbn"], book_info["pages"], book_info["date_published"], book_info["language"], book_info["synopsis"], book_info["cover_art"], book_info["finished_reading"], book_info["liked"], book_info["location"], session.get("user_id"), hashed_book_id))
         # Inform user about successfully adding the book using a flash popup on home page
         flash("Successfully added the book to your library")
         # Redirect user to homepage
@@ -449,6 +452,171 @@ def addconfirmation():
             # Show a message to the user regarding incorrect input
             flash(f"Sorry we could not automatically find the book under this ISBN number.")
     return render_template("addconfirmation.html", book_info=book_info)
+
+@app.route('/returningto', methods=['POST', 'GET'])
+@login_required
+def returningto():
+    # Connect to database in this context
+    con = get_db()
+    db = con.cursor()
+    # Get book and borrow id from forms
+    book_id = request.form.get("book_id")
+    borrowed_id = request.form.get("borrowed_id")
+    # Update the book entry in the database with new borrow id
+    with con:
+        db.execute("DELETE FROM borrowed WHERE borrowed_id = ?", (borrowed_id,))
+        db.execute("UPDATE books SET borrowed_id = ? WHERE book_id = ?", ('0', book_id))
+    # Empty the flash message session variable
+    session.pop('_flashes', None)
+    # Inform user about successfully updating the book using a flash popup on home page
+    flash("Successfully returned the book")
+    return redirect("/")
+
+@app.route('/borrowingto', methods=['POST', 'GET'])
+@login_required
+def borrowingto():
+    book_id = request.form.get("book_id")
+    return render_template("borrowingto.html", book_id=book_id)
+
+@app.route('/borrow', methods=['POST', 'GET'])
+@login_required
+def borrow():
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        # Connect to database in this context
+        con = get_db()
+        db = con.cursor()
+        # Get book id and borrower from forms
+        book_id = request.form.get("book_id")
+        borrower = request.form.get("borrower")
+        # Generates a borrow id by hashing the book_id and borrower name
+        borrow_id = hashlib.sha1(f"{book_id}{borrower}".encode()).hexdigest()
+        # Update the book entry in the database with new borrow id
+        with con:
+            db.execute("INSERT OR REPLACE INTO borrowed (borrowed_id, person) VALUES(?, ?)", (borrow_id, borrower))
+            db.execute("UPDATE books SET borrowed_id = ? WHERE book_id = ?", (borrow_id, book_id))
+        # Empty the flash message session variable
+        session.pop('_flashes', None)
+        # Inform user about successfully updating the book using a flash popup on home page
+        flash("Successfully borrowed the book")
+        return redirect("/")
+
+@app.route('/borrowed', methods=['POST', 'GET'])
+@login_required
+def borrowed():
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        # Connect to database in this context
+        con = get_db()
+        db = con.cursor()
+        # Access form input of search for person name
+        borrowed_person = request.form.get("borrower")
+        # Select from books where borrowed =! 0 and user current and borrowed person matches searched name
+        fetched = db.execute("SELECT * FROM books JOIN borrowed ON books.borrowed_id = borrowed.borrowed_id WHERE books.borrowed_id != ? AND books.user_id = ? AND borrowed.person LIKE ?", ("0", session.get("user_id"), f"{borrowed_person}%"))
+        rows = fetched.fetchall()
+        return render_template("borrowed.html", books=rows)
+    # Connect to database in this context
+    con = get_db()
+    db = con.cursor()
+    # Select from books where borrowed =! 0 and user current
+    fetched = db.execute("SELECT * FROM books WHERE borrowed_id != ? AND user_id = ?", ("0", session.get("user_id")))
+    rows = fetched.fetchall()
+    return render_template("borrowed.html", books=rows)
+
+@app.route('/wishlist', methods=['POST', 'GET'])
+@login_required
+def wishlist():
+    books = []
+     # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        # Connect to database in this context
+        con = get_db()
+        db = con.cursor()
+        # Fetch information about the book
+        wish_id = request.form.get("wishid")
+        # Check if tick clicked or cross
+        action = request.form.get("action")
+        if action == 'add':
+            fetched = db.execute("SELECT * FROM wishlist WHERE wish_id = ?", (wish_id,))
+            rows = fetched.fetchall()
+            # Removes the entry from the wishlist
+            with con:
+                db.execute("DELETE FROM wishlist WHERE wish_id == ?", (wish_id,))
+            return render_template("add.html", isbn=rows[0][1])
+        # Removes the entry from the wishlist
+        with con:
+            db.execute("DELETE FROM wishlist WHERE wish_id == ?", (wish_id,))
+        redirect("/wishlist")
+    # Connect to database in this context
+    con = get_db()
+    db = con.cursor()
+    # Select from books where borrowed =! 0 and user current
+    fetched = db.execute("SELECT * FROM wishlist WHERE user_id = ?", (session.get("user_id"),))
+    rows = fetched.fetchall()
+    return render_template("wishlist.html", books=rows)
+
+@app.route('/wished', methods=['POST', 'GET'])
+@login_required
+def wished():
+    # Empty the flash message session variable
+    session.pop('_flashes', None)
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        # Connect to database in this context
+        con = get_db()
+        db = con.cursor()
+        # Check if book already in database to prevent double entries
+        fetched = db.execute("SELECT * FROM wishlist WHERE isbn = ? AND user_id = ?", (request.form.get("isbn"), session.get("user_id")))
+        rows = fetched.fetchall()
+        if len(rows) != 0:
+            return apology("This book is already in your database! If you want to change it please edit it instead")
+        # Fetch book data into dictionary from form for easier formatting
+        book_info = {
+        "title" : request.form.get("title"),
+        "isbn" : request.form.get("isbn"),
+        "cover_art" : request.form.get("cover_art"),
+        "user_id" : session.get("user_id")
+        }
+        # Generates a borrow id by hashing the book_id and borrower name
+        wish_id = hashlib.sha1(f"{book_info['user_id']}{book_info["isbn"]}".encode()).hexdigest()
+        # Adds book to the wishlist database
+        with con:
+            db.execute("INSERT INTO wishlist (title, isbn, cover_art, user_id, wish_id) VALUES(?, ?, ?, ?, ?)", (book_info["title"], book_info["isbn"], book_info["cover_art"], book_info["user_id"], wish_id))
+        # Inform user about successfully adding the book using a flash popup on home page
+        flash("Successfully added the book to your wishlist")
+        # Redirect user to homepage for wishlist
+        return redirect("/wishlist")
+    return redirect("/")
+
+@app.route('/wishfor', methods=['POST', 'GET'])
+@login_required
+def wishfor():
+    # Empty the flash message session variable
+    session.pop('_flashes', None)
+    # Set up empty dictionary with book details
+    book_info = {
+        "title" : "",
+        "isbn" : "",
+        "cover_art" : "",
+    }
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        if request.form.get("isbn") != "":
+            book_info["isbn"] = request.form.get("isbn")
+            # Fetch information about the book with that ISBN from the ISBNdb API
+            resp = req.get(f"https://api2.isbndb.com/book/{book_info['isbn']}", headers=h)
+            # Parse the results from the API response into json
+            book_results = resp.json()
+            # Check the API response for whether the book was fetched successfully
+            if 'book' in book_results:
+                flash(f"We have automatically filled some of the book details for you.")
+                # Update the dictionary with the fetched book information
+                book_info["title"] = book_results["book"]["title"].replace('-', ' ').title()
+                book_info["cover_art"] = book_results["book"]["image"]
+            else:
+                # Show a message to the user regarding incorrect input
+                flash(f"Sorry we could not automatically find the book under this ISBN number.")
+    return render_template("wishfor.html", book_info=book_info)
 
 if __name__ == "__main__":
     app.run(debug=True)

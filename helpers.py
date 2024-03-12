@@ -1,8 +1,4 @@
-import csv
-import datetime
-import subprocess
-import urllib
-import uuid
+import random
 # import requests
 
 from flask import redirect, render_template, session
@@ -24,8 +20,7 @@ def login_required(f):
     return decorated_function
 
 
-def custom_merge_sort(tuple_list):
-    # sort by column no [5] date published
+def custom_merge_sort(tuple_list, index):
     # check whether there is more than one value in list to be sorted
     if len(tuple_list) > 1:
         # integer division discarding remainder
@@ -34,13 +29,13 @@ def custom_merge_sort(tuple_list):
         left = tuple_list[:midpoint]
         right = tuple_list[midpoint:]
         # Call the sort on the right and left halves recursively
-        custom_merge_sort(left)
-        custom_merge_sort(right)
+        custom_merge_sort(left, index)
+        custom_merge_sort(right, index)
         # Set up indexes for left, right and main lists
         l, r, i = 0, 0, 0
         # Loop to iterate through all values in both split lists
         while l < len(left) and r < len(right):
-            if left[l][5] >= right[r][5]:
+            if left[l][index] >= right[r][index]:
                 tuple_list[i] = left[l]
                 l+=1
             else:
@@ -56,3 +51,30 @@ def custom_merge_sort(tuple_list):
             tuple_list[i] = right[r]
             r+=1
             i+=1
+
+# Function for picking three random books out of a book tuple list
+def pick_three(rows):
+    # Check if less than 3 books in list
+    if len(rows) < 3:
+        return []
+    # Creates a list with 3 book tuples randomly selected
+    new_rows = random.sample(rows, 3)
+    # Creates a list to pass to the jinja template and formats the book data fetched from the database to display it on bootstrap cards
+    book_info1 = []
+    for book in new_rows:
+        book_temp = {
+            "date_published" : book[5],
+            "cover_art" : book[8],
+        }
+        book_temp["title"] = book[1]
+        # Shortens the title to a maximum of 35 characters and adds ... to the end
+        if len(book_temp["title"]) > 35:
+            book_temp["title"] = book_temp["title"][0:36].rstrip() + "..."
+        book_temp["synopsis"] = book[7]
+        # Shortens the synopsis to a maximum of 199 characters and adds ... to the end
+        if len(book_temp["synopsis"]) > 153:
+            book_temp["synopsis"] = book_temp["synopsis"][0:154] + "..."
+        elif len(book_temp["synopsis"]) <= 0:
+            book_temp["synopsis"] = "No book description available :("
+        book_info1.append(book_temp)
+    return book_info1

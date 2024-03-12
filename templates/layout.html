@@ -14,6 +14,7 @@
 
         <title>Bookagement: {% block title %}{% endblock %}</title>
         <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/256/3145/3145765.png">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     </head>
     <body>
 
@@ -29,6 +30,7 @@
                             <li class="nav-item"><a class="nav-link" href="/add">Add</a></li>
                             <li class="nav-item"><a class="nav-link" href="/search">Search</a></li>
                             <li class="nav-item"><a class="nav-link" href="/borrowed">Borrowed</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/wishlist">Wishlist</a></li>
                         </ul>
                         <ul class="navbar-nav ms-auto mt-2">
                             <li class="nav-item"><a class="nav-link" href="/logout">Log Out</a></li>
@@ -44,7 +46,7 @@
         </nav>
 
         {% for message in get_flashed_messages() %}
-        <div class="alert alert-warning">
+        <div class="alert alert-info">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
             {{ message }}
         </div>

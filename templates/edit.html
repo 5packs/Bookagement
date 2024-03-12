@@ -7,6 +7,7 @@
 {% block body %}
 
     <form action="/save" method="post">
+        <input type="hidden" name="book_id" value="{{ book_info['book_id'] }}">
         <input required type="text" id="title" name="title" class="form-control" placeholder="Title*" autocomplete="off" value="{{ book_info['title'] }}">
         <br>
         <input required type="text" id="author" name="author" class="form-control" placeholder="Author*" autocomplete="off" value="{{ book_info['author'] }}">
@@ -25,15 +26,17 @@
         <br>
         <input required type="text" id="isbn" name="isbn" class="form-control" placeholder="ISBN Number*" autocomplete="off" value="{{ book_info['isbn'] }}">
         <br>
-        <input type="checkbox" id="liked" name="liked" {{ "checked" if book_info['liked'] == 1 }} value="{{ book_info['liked'] }}">
-        <label for="liked"> Liked the book</label>
+        <div class="form-check form-switch">
+            <input style="float: none;" type="checkbox" id="liked" name="liked" {{ "checked" if book_info['liked'] == 1 }} value="{{ book_info['liked'] }}" class="form-check-input">
+            <label for="liked" class="form-check-label"> Liked the book</label>
+            <br>
+            <input style="float: none;" type="checkbox" id="finished_reading" name="finished_reading" {{ "checked" if book_info['finished_reading'] == 1 }} value="{{ book_info['finished_reading'] }}" class="form-check-input">
+            <label for="finishedreading" class="form-check-label"> Finished Reading</label>    
+        </div>
         <br>
-        <input type="checkbox" id="finished_reading" name="finished_reading" {{ "checked" if book_info['finished_reading'] == 1 }} value="{{ book_info['finished_reading'] }}">
-        <label for="finishedreading"> Finished Reading</label>
-        <br><br>
         <input type="text" id="location" name="location" class="form-control" placeholder="Location" autocomplete="off" value="{{ book_info['location'] }}">
         <br>
-        <button class="btn">
+        <button class="btn btn-outline-success">
             Save Changes
         </button>
     </form>

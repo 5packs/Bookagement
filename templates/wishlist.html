@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Wishlist
+{% endblock %}
+
+{% block body %}
+
+{% if books|length == 0 %}
+    <h1>Sorry we didn't find any books that you added to your wishlist</h1>
+{% else %}
+    <h1 class="headingone">These are the books on your wishlist:</h1>
+{% endif %}
+
+<form action="/wishfor" method="post">
+    <input type="text" id="isbn" name="isbn" class="form-control" placeholder="Please enter the ISBN number of the book if you want to wishlist it automatically" autofocus autocomplete="off">
+    <button style="margin-top: 10px;" class="btn btn-outline-primary">
+        Add Automatically
+    </button>
+</form>
+<form action="/wishfor" method="get">
+    <button style="margin-top: 10px;" class="btn btn-outline-secondary">
+        Add Manually
+    </button>
+</form>
+
+<div class="row">
+
+    {% for book in books %}
+
+    <form action="/wishlist" method="post" style="display:block; width: 20%; min-width: 250px; height: 320; margin-bottom: 20px;">
+        <input type="hidden" name="wishid" id="wishid" value="{{ book[0] }}">
+        <img style="height: 300px; width: auto; align-self: center;" src="{{ book[4] }}" class="card-img-top" alt="...">
+        <p>{{ book[2]|truncate(28,true) }}</p>
+        <div>
+            <button type="submit" name="action" value="add" class="btn btn-outline-success">$</button>
+            <button type="submit" name="action" value="remove" class="btn btn-outline-danger">X</button>
+        </div>
+    </form>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

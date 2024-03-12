@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Add To Wishlist
+{% endblock %}
+
+{% block body %}
+
+    <form action="/wished" method="post">
+        <input required type="text" id="title" name="title" class="form-control" placeholder="Title*" autocomplete="off" value="{{ book_info['title'] }}">
+        <br>
+        <input required type="text" id="cover_art" name="cover_art" class="form-control" placeholder="Cover Art Url*" autocomplete="off" value="{{ book_info['cover_art'] }}">
+        <br>
+        <input required type="text" id="isbn" name="isbn" class="form-control" placeholder="ISBN Number*" autocomplete="off" value="{{ book_info['isbn'] }}">
+        <br>
+        <button class="btn btn-outline-primary">
+            Add To Wishlist
+        </button>
+    </form>
+
+{% endblock %}

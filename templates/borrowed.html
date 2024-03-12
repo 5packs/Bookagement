@@ -7,18 +7,16 @@
 {% block body %}
 
 {% if books|length == 0 %}
-    <h1>Sorry we didn't find any books that fit your search criteria</h1>
+    <h1>Sorry we didn't find any books that you borrowed</h1>
 {% else %}
-    <h1 class="headingone">We found these books that fit your search criteria:</h1>
-
-    <form action="/search" method="post">
-        <input type="hidden" name="inputsearch" value="{{ search_query }}"> 
-        <select class="form-select" style="width: 20%; margin: auto; margin-bottom: 20px;" name="sort_by" onchange="this.form.submit();">
-            <option value="1" selected disabled hidden>Sort By</option>
-            <option value="1" label="Title"></option>
-            <option value="2" label="Author"></option>
-            <option value="5" label="Release Date"></option>
-        </select>
+    <h1 class="headingone">We found these books that you borrowed:</h1>
+    <form action="/borrowed" method="post">
+        <div class="input-group mb-3" style="max-width: 90%; margin-left: 5%;">
+            <input autofocus type="search" id="borrower" name="borrower" class="form-control" placeholder="Enter the name of who you borrowed the book to">
+            <button class="btn btn-lg btn-outline-success">
+                Search
+            </button>
+        </div>
     </form>
 {% endif %}
 
