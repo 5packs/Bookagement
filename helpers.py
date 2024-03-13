@@ -78,3 +78,37 @@ def pick_three(rows):
             book_temp["synopsis"] = "No book description available :("
         book_info1.append(book_temp)
     return book_info1
+
+class Book:
+    def __init__(self, rows):
+        self.title = rows[1]
+        self.author_id = rows[2]
+        self.publisher_id = rows[3]
+        self.isbn = rows[0]
+        self.pages = rows[4]
+        self.date_published = rows[5]
+        self.language = rows[6]
+        self.synopsis = rows[7]
+        self.cover_art = rows[8]
+        self.location = rows[11]
+        self.book_id = rows[14]
+        # Check checkboxes separately for input
+        liked = rows[10]
+        if liked == 0:
+            self.liked = 0
+        else:
+            self.liked = 1
+        finished_reading = rows[9]
+        if finished_reading == 0:
+            self.finished_reading = 0
+        else:
+            self.finished_reading = 1
+    
+    def SetAuthor(self, author):
+        self.author = author
+        
+    def SetPublisher(self, publisher):
+        self.publisher = publisher
+
+    def SetLocation(self, location):
+        self.location = location

@@ -1,9 +1,7 @@
 # Questions for Mr Lane
-[] - Would you get extra points for using book object instead of dictionary takes tuple of SQL as a constructor and changes into book YES
 
 # TODO For Project
 [] - Change the title names on all of your html files
-[] - Display current bestsellers to add to wishlist on main page??? no according to lane
 [] - Look at the scoring table on drive
 [] - Add a bunch of books to your database to showcase how it works
 [] - Generate UML diagram for class relationship from the sql schema
@@ -13,6 +11,7 @@
 [] - better visuals and design using flex box
 
 # Features to mention in writeup
+[] - Would you get extra points for using book object instead of dictionary takes tuple of SQL as a constructor and changes into book YES
 [] - should i implement pages on book searches ADD WISHLIST TABLE THAT TIES TO THE USER TABLE
 [] - Add a wishlist? in a separate table and single page for adding simple information about the book and then adding book to library
 [] - main page add books that you have read and liked to maybe revisit at some point

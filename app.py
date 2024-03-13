@@ -5,7 +5,7 @@ import sqlite3
 import requests as req
 import hashlib
 import random
-from helpers import apology, login_required, custom_merge_sort, pick_three
+from helpers import apology, login_required, custom_merge_sort, pick_three, Book
 
 h = {'Authorization': '51841_15f8a1a6b75e8c37b224c61dca5164e7'}
 
@@ -206,40 +206,19 @@ def edit():
     # Gets the book details from database using the ISBN number passed in form
     fetched = db.execute("SELECT * FROM books WHERE book_id = ?", (request.form.get("book_id"),))
     rows = fetched.fetchall()[0]
-    # Create a book value dictionary out of the values returned from the search query in the database
-    book_info = {}
-    book_info["title"] = rows[1]
-    book_info["author_id"] = rows[2]
-    book_info["publisher_id"] = rows[3]
-    book_info["isbn"] = rows[0]
-    book_info["pages"] = rows[4]
-    book_info["date_published"] = rows[5]
-    book_info["language"] = rows[6]
-    book_info["synopsis"] = rows[7]
-    book_info["cover_art"] = rows[8]
-    book_info["location"] = rows[11]
-    book_info["book_id"] = rows[14]
-    # Check checkboxes separately for input
-    liked = rows[10]
-    if liked == 0:
-        book_info["liked"] = 0
-    else:
-        book_info["liked"] = 1
-    finished_reading = rows[9]
-    if finished_reading == 0:
-        book_info["finished_reading"] = 0
-    else:
-        book_info["finished_reading"] = 1
+    # ---
+    book_info = Book(rows)
+    # ---
     # Fetch author and publisher name using the hashed id and add them to the dictionary
-    author_query = db.execute("SELECT * FROM authors WHERE author_id = ?", (book_info["author_id"],))
+    author_query = db.execute("SELECT * FROM authors WHERE author_id = ?", (book_info.author_id,))
     author_name = author_query.fetchall()[0][1]
-    publisher_query = db.execute("SELECT * FROM publishers WHERE publisher_id = ?", (book_info["publisher_id"],))
+    publisher_query = db.execute("SELECT * FROM publishers WHERE publisher_id = ?", (book_info.publisher_id,))
     publisher_name = publisher_query.fetchall()[0][1]
-    location_query = db.execute("SELECT * FROM locations WHERE location_id = ?", (book_info["location"],))
+    location_query = db.execute("SELECT * FROM locations WHERE location_id = ?", (book_info.location,))
     location_name = location_query.fetchall()[0][1]
-    book_info["author"] = author_name
-    book_info["publisher"] = publisher_name
-    book_info["location"] = location_name
+    book_info.SetAuthor(author_name)
+    book_info.SetPublisher(publisher_name)
+    book_info.SetLocation(location_name)
     return render_template("edit.html", book_info=book_info)
 
 @app.route('/save', methods=['POST'])
@@ -250,8 +229,21 @@ def save():
     db = con.cursor()
     # Hash the author name string using SHA1 to generate the author_id which is the primary key in the authors table
     hashed_author_name = hashlib.sha1(request.form.get("author").encode())
+    # Check if author already in database if not insert into authors table
+    fetched = db.execute("SELECT * FROM authors WHERE author_id = ?", (hashed_author_name.hexdigest(),))
+    author_rows = fetched.fetchall()
+    if len(author_rows) == 0:
+        with con:
+            db.execute("INSERT INTO authors (author_id, name) VALUES(?, ?)", (hashed_author_name.hexdigest(), request.form.get("author")))
     # Hash the publisher name string using SHA1 to generate the publisher_id which is the primary key in the publishers table
     hashed_publisher_name = hashlib.sha1(request.form.get("publisher").encode())
+    # Check if publisher already in database if not insert into publishers table
+    fetched = db.execute("SELECT * FROM publishers WHERE publisher_id = ?", (hashed_publisher_name.hexdigest(),))
+    publisher_rows = fetched.fetchall()
+    if len(publisher_rows) == 0:
+        with con:
+            db.execute("INSERT INTO publishers (publisher_id, name) VALUES(?, ?)", (hashed_publisher_name.hexdigest(), request.form.get("publisher")))
+
     # Check checkboxes separately for input
     liked = request.form.get("liked")
     if liked == None:

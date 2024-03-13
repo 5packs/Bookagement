@@ -7,34 +7,34 @@
 {% block body %}
 
     <form action="/save" method="post">
-        <input type="hidden" name="book_id" value="{{ book_info['book_id'] }}">
-        <input required type="text" id="title" name="title" class="form-control" placeholder="Title*" autocomplete="off" value="{{ book_info['title'] }}">
+        <input type="hidden" name="book_id" value="{{ book_info.book_id }}">
+        <input required type="text" id="title" name="title" class="form-control" placeholder="Title*" autocomplete="off" value="{{ book_info.title }}">
         <br>
-        <input required type="text" id="author" name="author" class="form-control" placeholder="Author*" autocomplete="off" value="{{ book_info['author'] }}">
+        <input required type="text" id="author" name="author" class="form-control" placeholder="Author*" autocomplete="off" value="{{ book_info.author }}">
         <br>
-        <input required type="text" id="publisher" name="publisher" class="form-control" placeholder="Publisher*" autocomplete="off" value="{{ book_info['publisher'] }}">
+        <input required type="text" id="publisher" name="publisher" class="form-control" placeholder="Publisher*" autocomplete="off" value="{{ book_info.publisher }}">
         <br>
-        <input required type="text" id="pages" name="pages" class="form-control" placeholder="Pages*" autocomplete="off" value="{{ book_info['pages'] }}">
+        <input required type="text" id="pages" name="pages" class="form-control" placeholder="Pages*" autocomplete="off" value="{{ book_info.pages }}">
         <br>
-        <input required type="text" id="date_published" name="date_published" class="form-control" placeholder="Date Published*" autocomplete="off" value="{{ book_info['date_published'] }}">
+        <input required type="text" id="date_published" name="date_published" class="form-control" placeholder="Date Published*" autocomplete="off" value="{{ book_info.date_published }}">
         <br>
-        <input required type="text" id="language" name="language" class="form-control" placeholder="Language*" autocomplete="off" value="{{ book_info['language'] }}">
+        <input required type="text" id="language" name="language" class="form-control" placeholder="Language*" autocomplete="off" value="{{ book_info.language }}">
         <br>
-        <textarea id="synopsis" rows="3" name="synopsis" class="form-control" placeholder="Synopsis" autocomplete="off">{{ book_info['synopsis'] }}</textarea>
+        <textarea id="synopsis" rows="3" name="synopsis" class="form-control" placeholder="Synopsis" autocomplete="off">{{ book_info.synopsis }}</textarea>
         <br>
-        <input required type="text" id="cover_art" name="cover_art" class="form-control" placeholder="Cover Art Url*" autocomplete="off" value="{{ book_info['cover_art'] }}">
+        <input required type="text" id="cover_art" name="cover_art" class="form-control" placeholder="Cover Art Url*" autocomplete="off" value="{{ book_info.cover_art }}">
         <br>
-        <input required type="text" id="isbn" name="isbn" class="form-control" placeholder="ISBN Number*" autocomplete="off" value="{{ book_info['isbn'] }}">
+        <input required type="text" id="isbn" name="isbn" class="form-control" placeholder="ISBN Number*" autocomplete="off" value="{{ book_info.isbn }}">
         <br>
         <div class="form-check form-switch">
-            <input style="float: none;" type="checkbox" id="liked" name="liked" {{ "checked" if book_info['liked'] == 1 }} value="{{ book_info['liked'] }}" class="form-check-input">
+            <input style="float: none;" type="checkbox" id="liked" name="liked" {{ "checked" if book_info.liked == 1 }} value="{{ book_info.liked }}" class="form-check-input">
             <label for="liked" class="form-check-label"> Liked the book</label>
             <br>
-            <input style="float: none;" type="checkbox" id="finished_reading" name="finished_reading" {{ "checked" if book_info['finished_reading'] == 1 }} value="{{ book_info['finished_reading'] }}" class="form-check-input">
+            <input style="float: none;" type="checkbox" id="finished_reading" name="finished_reading" {{ "checked" if book_info.finished_reading == 1 }} value="{{ book_info.finished_reading }}" class="form-check-input">
             <label for="finishedreading" class="form-check-label"> Finished Reading</label>    
         </div>
         <br>
-        <input type="text" id="location" name="location" class="form-control" placeholder="Location" autocomplete="off" value="{{ book_info['location'] }}">
+        <input type="text" id="location" name="location" class="form-control" placeholder="Location" autocomplete="off" value="{{ book_info.location }}">
         <br>
         <button class="btn btn-outline-success">
             Save Changes
