@@ -79,6 +79,7 @@ def pick_three(rows):
         book_info1.append(book_temp)
     return book_info1
 
+# Custom written Book class accepting a constructor of the form of a list received after an SQL query
 class Book:
     def __init__(self, rows):
         self.title = rows[1]

@@ -1,6 +1,7 @@
 # Questions for Mr Lane
 
 # TODO For Project
+[] - markup all the algorithms using the score sheet so add like PARAMETERISED SQL!!!
 [] - Change the title names on all of your html files
 [] - Look at the scoring table on drive
 [] - Add a bunch of books to your database to showcase how it works
@@ -12,7 +13,7 @@
 
 # Features to mention in writeup
 [] - Would you get extra points for using book object instead of dictionary takes tuple of SQL as a constructor and changes into book YES
-[] - should i implement pages on book searches ADD WISHLIST TABLE THAT TIES TO THE USER TABLE
+[] - ADD WISHLIST TABLE THAT TIES TO THE USER TABLE
 [] - Add a wishlist? in a separate table and single page for adding simple information about the book and then adding book to library
 [] - main page add books that you have read and liked to maybe revisit at some point
 [] - Additional borrowed category which is already displayed remember
@@ -48,14 +49,36 @@
 [] - Add custom page icon and check if names of pages change at heading
 [] - Explain why use Jinja CSS bootstrap flask etc
 [] - Use sqlite3 how it works with app
+[] - why u chose isbn db api
 
 ## New Goals to add in writeup
-[] - Enable multiple users to use the app
+[] - And read or unread toggle boolean
+[] - Barcode reader remember to add as input method on writeup
+[] - Liked unlike boolean adds
+[] - enable to save the location of the book
+[] - Results display using cover art
+[] - Enable multiple users to use the app therefore setup a secure login register system
 [] - Secure storage of login credentials (I used hashing :)
 [] - Allow the user to edit book entries and update the book details in the database
+[] - have a wishlist tab to allow to add books to buy in the future
+[] - display books to read that havent been read and read books to revisit
+[] - allow users to borrow books
+[] - Custom apology pages rendered on wrong input?
+
+### Identification Of New User Needs: 
+1. The program should allow the user to easily add new books to his existing book catalogue (by scanning the barcode).
+2. The program should have a way for the user to search up whether a book is in the catalogue using its title/author and view information about the book.
+3. The program should have a way for the user to edit book entries which are already in their catalogue
+4. The program should keep track of the location of a book within a house i.e. which room was it in when it was added to the catalogue.
+5. The program should have a section for books that have been borrowed to other people with information of who those books were lent to.
+6. The program should be able to suggest unread books from within the users catalogue
+7. The program should have a second suggestions tab which suggests old books for the user to revisit based on if they liked them or not
+8. The program should be easy to use using the book cover arts as the main UI element
+9. The program should securely support multiple users
+10. The program should have an option to wishlist books to buy in the future
 
 ## Original Goals
-### Identification Of User Needs:		
+### Identification Of User Needs:
 1. The program should allow the user to easily add new books to his existing book catalogue (by scanning the barcode).
 2. The program should have a way for the user to search up whether a book is in the catalogue using its title/author and view information about the book.
 3. The program should keep track of the location of a book within a house i.e. which shelf was it on when it was added to the catalogue.
@@ -103,7 +126,7 @@ PRIMARY KEY (publisher_id)
 );
 
 CREATE TABLE users (
-user_id INT NOT NULL UNIQUE AUTOINCREMENT,
+user_id INT NOT NULL UNIQUE,
 username TEXT UNIQUE NOT NULL,
 hash TEXT NOT NULL,
 PRIMARY KEY (user_id)
@@ -130,4 +153,29 @@ cover_art TEXT NOT NULL,
 PRIMARY KEY (wish_id)
 FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
+```
+
+```mermaidjs
+flowchart TD
+subgraph Homepage After Login:
+    A([Start]) --> B[/Display Options/]
+    A --> C[/Display Book Suggestions/]
+end
+
+B -->|Add Book| D[/Input ISBN/]
+D -->|Automatic| G[[Fetch Data From ISBN API]]
+G --> H[(Save fetched data into SQL database)]
+D -->|Manual| I[/Display UI for manual input of data/]
+I --> H
+
+
+B -->|Search Book| E[/Input Title/Author/]
+E --> F[(Fetch data from the database)]
+F --> J[/Display books or error/]
+
+B -->|Borrowed Books| K[(Fetch data from the database)]
+K --> L[/Display books or error/]
+
+B -->|Wishlisted Books| M[(Fetch data from the database)]
+M --> N[/Display books or error/]
 ```

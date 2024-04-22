@@ -4,7 +4,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 import requests as req
 import hashlib
-import random
 from helpers import apology, login_required, custom_merge_sort, pick_three, Book
 
 h = {'Authorization': '51841_15f8a1a6b75e8c37b224c61dca5164e7'}
@@ -21,7 +20,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Database global variable path
-DATABASE = "C:\\Users\\Spacks\\Documents\\Bookagement\\test.db"
+DATABASE = "C:\\Users\\Spacks\\Documents\\Bookagement\\bookagement.db"
 
 # Get the global database variable if available
 def get_db():
@@ -41,7 +40,7 @@ def close_connection(exception):
 @app.route('/')
 @login_required
 def index():
-    # Sets up connection to the database
+    # Sets up connection to the databases
     db = get_db().cursor()
     # Query the database for the most recent added or edited unread books
     fetched = db.execute("SELECT * FROM books WHERE finished_reading = ? AND borrowed_id = ? AND user_id = ?", ("0", "0", session.get("user_id")))
@@ -82,7 +81,10 @@ def register():
             return apology("username taken", 400)
         # Add user to database
         with con:
-            db.execute("INSERT INTO users (username, hash) VALUES(?, ?)", (request.form.get("username"), generate_password_hash(request.form.get("password"))))
+            username = request.form.get("username")
+            password = generate_password_hash(request.form.get("password"))
+            user_id = hashlib.sha1(f"{username}{password}".encode()).hexdigest()
+            db.execute("INSERT INTO users (username, hash, user_id) VALUES(?, ?, ?)", (username, password, user_id))
         # Redirect user to home page
         return redirect("/login")
     # User reached route via GET (as by clicking a link or via redirect)
