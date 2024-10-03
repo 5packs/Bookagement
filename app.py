@@ -6,7 +6,7 @@ import requests as req
 import hashlib
 from helpers import apology, login_required, custom_merge_sort, pick_three, Book
 
-h = {'Authorization': '51841_15f8a1a6b75e8c37b224c61dca5164e7'}
+h = {'Authorization': 'ISBN_API_KEY'}
 
 # Start application
 app = Flask(__name__)
