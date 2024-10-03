@@ -20,7 +20,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Database global variable path
-DATABASE = "C:\\Users\\Spacks\\Documents\\Bookagement\\bookagement.db"
+DATABASE = "C:\\Users\\User\\Documents\\Bookagement\\bookagement.db"
 
 # Get the global database variable if available
 def get_db():
