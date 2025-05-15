@@ -1,16 +1,3 @@
-# Questions for Mr Lane
-
-# TODO For Project
-[] - markup all the algorithms using the score sheet so add like PARAMETERISED SQL!!!
-[] - Change the title names on all of your html files
-[] - Look at the scoring table on drive
-[] - Add a bunch of books to your database to showcase how it works
-[] - Generate UML diagram for class relationship from the sql schema
-[] - Make it pretty using background images and colors and fonts?
-
-# Features to add in the future
-[] - better visuals and design using flex box
-
 # Features to mention in writeup
 [] - Would you get extra points for using book object instead of dictionary takes tuple of SQL as a constructor and changes into book YES
 [] - ADD WISHLIST TABLE THAT TIES TO THE USER TABLE
